@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
           submodules: recursive
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -23,16 +23,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build build-essential
 
-      - name: Setup Android SDK & NDK
-        uses: android-actions/setup-android@v3
-
-      - name: Build APK
+      - name: Build Android App
         run: |
-          export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/latest
-          chmod +x gradlew || true
-          if [ -f "./android/build_apk.sh" ]; then
-            bash android/build_apk.sh
+          # Si existe la carpeta android, nos metemos en ella
+          if [ -d "android" ]; then
+            cd android
+          fi
+          
+          # Ejecutamos el script de compilación o gradle según lo que encuentre
+          if [ -f "build_apk.sh" ]; then
+            chmod +x build_apk.sh
+            bash build_apk.sh
+          elif [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleRelease
           else
+            echo "Buscando gradlew en la raíz..."
+            cd ..
+            chmod +x gradlew || true
             ./gradlew assembleRelease
           fi
 
@@ -42,3 +50,4 @@ jobs:
           name: SuperMarioWonder-APK
           path: |
             **/*.apk
+            **/build/outputs/apk/**/*.apk
