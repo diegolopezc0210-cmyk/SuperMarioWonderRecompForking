@@ -18,17 +18,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android NDK
-        uses: nvida/setup-ndk@v1
-        with:
-          ndk-version: r25c
+      - name: Setup Android SDK & NDK
+        uses: android-actions/setup-android@v3
 
-      - name: Build APK with Gradle
+      - name: Build APK
         run: |
           chmod +x gradlew || true
           if [ -f "./android/build_apk.sh" ]; then
             bash android/build_apk.sh
-          else
+          elif [ -f "./gradlew" ]; then
             ./gradlew assembleRelease
           fi
 
